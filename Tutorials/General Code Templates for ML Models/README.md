@@ -3,36 +3,37 @@
 ## Cross-Validation
 <pre>
   <code>
-def cross_validate(model, model_type, X, y, scorer, n_splits=5):
-    kfold  = KFold(n_splits=n_splits, shuffle=True, random_state=3126)
-    scores = np.zeros(n_splits) 
+def cross_validate(model, model_type, X, y, scorer, n_splits=5, k_repeats=1):
+    scores = np.zeros(n_splits*k_repeats) 
 
-    for i,(train_idx,val_idx) in enumerate(kfold.split(X)):
-        X_train, y_train = X.iloc[train_idx,:], y[train_idx]
-        X_val,   y_val   = X.iloc[val_idx,:],   y[val_idx]
+    for k in range(1, k_repeats+1):
+        kfold  = KFold(n_splits=n_splits, shuffle=True, random_state=k*3126)
+        for i,(train_idx,val_idx) in enumerate(kfold.split(X)):
+            X_train, y_train = X.iloc[train_idx,:], y[train_idx]
+            X_val,   y_val   = X.iloc[val_idx,:],   y[val_idx]
 
-        cloned_model = clone(model)
-        ## Fits model
-        if model_type=="lgbm":
-            cloned_model.fit(
-                X_train, y_train,
-                eval_set=[(X_val, y_val)],
-                callbacks=[lightgbm.early_stopping(100, verbose=False)])
+            cloned_model = clone(model)
+            ## Fits model
+            if model_type=="lgbm":
+                cloned_model.fit(
+                    X_train, y_train,
+                    eval_set=[(X_val, y_val)],
+                    callbacks=[lightgbm.early_stopping(100, verbose=False)])
       
-        elif model_type=="xgboost":
-            cloned_model.fit(
-                X_train, y_train,
-                eval_set=[(X_val, y_val)],
-                early_stopping_rounds=100, verbose=False)
+            elif model_type=="xgboost":
+                cloned_model.fit(
+                    X_train, y_train,
+                    eval_set=[(X_val, y_val)],
+                    verbose=False)
             
-        elif model_type=="catboost":
-            pass
+            elif model_type=="catboost":
+                pass
     
-        else: 
-            cloned_model.fit(X_train, y_train)
+            else: 
+                cloned_model.fit(X_train, y_train)
 
-        ## Stores the score
-        scores[i] = scorer(y_val, cloned_model.predict(X_val))
+            ## Stores the score
+            scores[i] = scorer(y_val, cloned_model.predict(X_val))
     return scores
   </code>
 </pre>
