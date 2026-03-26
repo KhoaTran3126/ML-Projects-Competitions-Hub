@@ -9,7 +9,7 @@ def cross_validate(model, model_type, X, y, scorer, n_splits=5, k_repeats=1):
     
     for k in range(1, k_repeats+1):
         kfold  = KFold(n_splits=n_splits, shuffle=True, random_state=k*3126)
-        for i,(train_idx,val_idx) in enumerate(kfold.split(X)):
+        for train_idx,val_idx in kfold.split(X):
             X_train, y_train = X.iloc[train_idx,:], y[train_idx]
             X_val,   y_val   = X.iloc[val_idx,:],   y[val_idx]
 
