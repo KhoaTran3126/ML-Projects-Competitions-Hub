@@ -5,7 +5,8 @@
   <code>
 def cross_validate(model, model_type, X, y, scorer, n_splits=5, k_repeats=1):
     scores = np.zeros(n_splits*k_repeats) 
-
+    scores_idx_pointer = 0
+    
     for k in range(1, k_repeats+1):
         kfold  = KFold(n_splits=n_splits, shuffle=True, random_state=k*3126)
         for i,(train_idx,val_idx) in enumerate(kfold.split(X)):
@@ -33,7 +34,8 @@ def cross_validate(model, model_type, X, y, scorer, n_splits=5, k_repeats=1):
                 cloned_model.fit(X_train, y_train)
 
             ## Stores the score
-            scores[i] = scorer(y_val, cloned_model.predict(X_val))
+            scores[scores_idx_pointer] = scorer(y_val, cloned_model.predict(X_val))
+            scores_idx_pointer += 1
     return scores
   </code>
 </pre>
